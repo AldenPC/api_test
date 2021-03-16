@@ -45,6 +45,8 @@ public class testing {
 
     @Test
     public void failGetAllPostCommentsBasic() throws IOException {
+        String user = creds.getuser();
+        String pass = creds.getpass();
         //***create new post***
         RestAssured.baseURI = "https://api-coffee-testing.herokuapp.com";
         Integer newpost = given()
@@ -55,20 +57,19 @@ public class testing {
                 .then()
                 .extract().path("id");
         //***create new comment***
-        given()
+        given().auth().preemptive().basic(user, pass).contentType(ContentType.JSON)
                 //***no login***
                 .body(new File("src/main/resources/createComment.json"))
                 .when()
                 .post("/v1/comment/" + newpost)
                 .then();
         //***Get comment***
-
         given()//***no login***
                 .when()
                 .get("/v1/comments/" + newpost)
                 .then()
                 .assertThat().statusCode(401)
-                .assertThat().body("message", equalTo("Please login first")).log().body();
+                .assertThat().body("message", equalTo("Please login first"));
         System.out.println("The API does not accept creating, deleting, updating or getting posts without login first.");
     }
 
@@ -98,7 +99,6 @@ public class testing {
                 .when()
                 .get("/v1/comment/" + newpost + "/" + newid)
                 .then()
-                .log().body()
                 .assertThat()
                 .statusCode(200)
                 .extract().path("data.comment");
@@ -130,7 +130,7 @@ public class testing {
                 .get("/v1/comment/" + newpost + "/" + newid)
                 .then()
                 .assertThat().statusCode(401)
-                .assertThat().body("message", equalTo("Please login first")).log().body();
+                .assertThat().body("message", equalTo("Please login first"));
         System.out.println("The API does not accept creating, deleting, updating or getting posts without login first.");
     }
 
@@ -162,7 +162,6 @@ public class testing {
         .when()
         .delete("/v1/comment/" + newpost + "/" + newid)
         .then()
-        .log().body()
         .assertThat()
         .statusCode(200)
         .body("message", equalTo("Comment deleted"));
@@ -206,32 +205,47 @@ public class testing {
 
     @Test
     public void postcommentbasic() throws IOException {
+        //***create new post***
         RestAssured.baseURI = "https://api-coffee-testing.herokuapp.com";
+        Integer newpost = given()
+                .spec(RequestSpecs.generateToken())
+                .body(new File("src/main/resources/createPost.json"))
+                .when()
+                .post("/v1/post")
+                .then()
+                .extract().path("id");
+        System.out.println("Id from created post is:" + newpost);
+        //***create new comment***
         String username = creds.getuser();
         String password = creds.getpass();
         Integer newid = given().auth().preemptive().basic(username, password).contentType(ContentType.JSON)
                 .body(new File("src/main/resources/createComment.json"))
                 .when()
-                .post("/v1/comment/99")
-                .then()
-                .log().body()
-                .assertThat()
-                .statusCode(200)
+                .post("/v1/comment/" + newpost)
+                .then().assertThat().statusCode(200)
                 .extract().path("id");
-        System.out.println("Id of the created comment :" + newid);
-
+        System.out.println("Comment posted successfully");
+        System.out.println("The id of the created comment is:" + newid);
     }
 
     @Test
     public void failPostcommentbasic() throws IOException {
+        //***create new post***
         RestAssured.baseURI = "https://api-coffee-testing.herokuapp.com";
+        Integer newpost = given()
+                .spec(RequestSpecs.generateToken())
+                .body(new File("src/main/resources/createPost.json"))
+                .when()
+                .post("/v1/post")
+                .then()
+                .extract().path("id");
         String username = creds.getuser();
         String password = creds.getpass();
         given()
                 //***no login***
                 .body(new File("src/main/resources/createComment.json"))
                 .when()
-                .post("/v1/comment/99")
+                .post("/v1/comment/" + newpost)
                 .then()
                 .assertThat().statusCode(401)
                 .assertThat().body("message", equalTo("Please login first"));
@@ -249,6 +263,7 @@ public class testing {
                 .then()
                 .assertThat().statusCode(200)
                 .log().body();
+        System.out.println("These are all the posts that exist in the API");
     }
 
     @Test
@@ -273,10 +288,10 @@ public class testing {
                 .when()
                 .post("/v1/post")
                 .then()
-                .log().body()
                 .assertThat()
                 .statusCode(200)
                 .extract().path("id");
+        System.out.println("Post created successfully");
         System.out.println("Id of the created post:" + newpost);
     }
 
