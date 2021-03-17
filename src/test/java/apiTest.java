@@ -10,7 +10,7 @@ import helpers.basicAuth;
 import static org.hamcrest.Matchers.equalTo;
 import static io.restassured.RestAssured.*;
 
-public class testing {
+public class apiTest {
 
     basicAuth creds = new basicAuth();
 
@@ -329,9 +329,8 @@ public class testing {
         .get("/v1/post/" + newpost)
         .then()
         .assertThat()
-        .statusCode(200)
-        .log().body().extract().path("title", "content");
-
+        .statusCode(200).log().body();
+        System.out.println("Post retrieved successfully");
     }
 
     @Test
@@ -379,9 +378,8 @@ public class testing {
                 .put("/v1/post/" + newpost)
                 .then()
                 .assertThat().statusCode(200)
-                .assertThat().body("message", equalTo("Post updated"))
-                .log().body();
-        System.out.println("Post was updated successfully");
+                .assertThat().body("message", equalTo("Post updated"));
+        System.out.println("Post with id " + newpost + " was updated successfully");
     }
 
     @Test
@@ -428,8 +426,7 @@ public class testing {
                 .delete("/v1/post/" + newpost)
                 .then()
                 .assertThat().statusCode(200)
-                .assertThat().body("message", equalTo("Post deleted"))
-                .log().body();
+                .assertThat().body("message", equalTo("Post deleted"));
         System.out.println("The post with id " + newpost + " was deleted successfully");
     }
 
