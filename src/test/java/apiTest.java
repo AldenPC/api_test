@@ -40,7 +40,7 @@ public class apiTest {
         .get("/v1/comments/" + newpost)
         .then()
         .assertThat().statusCode(200).log().body();
-        System.out.println("These are all the comments from this post id:" + newpost);
+        System.out.println("These were all the comments from this post id:" + newpost);
     }
 
     @Test
